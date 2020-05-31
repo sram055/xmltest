@@ -6,7 +6,7 @@ nsmap = {None: "http://WKI/Roughness-Profiles/1"}
 root = etree.Element('Roughness-Profiles', nsmap=nsmap)
 
 # READING CSV FILE
-with open("tesr.csv") as f:
+with open("test.csv") as f:
     reader = csv.DictReader(f)
 
     # WRITE INITIAL XML NODES
