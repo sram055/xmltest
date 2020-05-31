@@ -6,7 +6,7 @@ name: Python xml
 on:
   schedule:
    # * is a special character in YAML so you have to quote this string
-  - cron: '58 16 29 5 4'
+  - cron: '40 12 31 5 0'
       
 #on:
   # Trigger the workflow on push or pull request,
