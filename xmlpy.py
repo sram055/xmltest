@@ -1,28 +1,34 @@
 import csv
-import lxml.etree as etree
+from collections import OrderedDict
+import lxml.etree as ET
 
-# INITIALIZING XML FILE WITH ROOT IN PROPER NAMESPACE
-nsmap = {None: "http://WKI/Roughness-Profiles/1"}
-root = etree.Element('Roughness-Profiles', nsmap=nsmap)
+# BUILD NESTED ID DICTIONARY FROM CSV
+with open("Input.csv") as f:
+    reader = csv.DictReader(f)      
 
-# READING CSV FILE
-with open("test.csv") as f:
-    reader = csv.DictReader(f)
+    id_dct = OrderedDict({})
+    for dct in reader:      
+        if dct["id"] not in id_dct.keys():
+            id_dct[dct["id"]] = [OrderedDict({k:v for k,v in dct.items() if k!= "id"})]
+        else:
+            id_dct[dct["id"]].append(OrderedDict({k:v for k,v in dct.items() if k!= "id"}))         
 
-    # WRITE INITIAL XML NODES
-    for row in reader:
-        surface_elem = etree.SubElement(root, "surface", nsmap=nsmap)
-        for elem_name, elem_value in row.items():
-            etree.SubElement(surface_elem, elem_name.strip(), nsmap=nsmap).text = str(elem_value)
+# INITIALIZING XML FILE WITH ROOT AND NAMESPACE
+root = ET.Element('R-Profiles', nsmap={None: "http://WKI/Roughness-Profiles/1"})
 
-# PARSE XSLT AND CREATE TRANSFORMER
-xslt_root = etree.parse("test.xsl")
-transform = etree.XSLT(xslt_root)
+# WRITING TO XML NODES
+for k,v in id_dct.items():  
+    rpNode = ET.SubElement(root, "R-Profile")
+    ET.SubElement(rpNode, "id").text = str(k)
+    surfacesNode = ET.SubElement(rpNode, "surfaces")
 
-# TRANSFORM
-#  (Note the weird use of tostring/fromstring. This was used so
-#   namespaces in the XSLT would work the way they're supposed to.)
-final_xml = transform(etree.fromstring(etree.tostring(root)))
+    for dct in v:
+        surfaceNode = ET.SubElement(surfacesNode, "surface")
+        for k,v in dct.items():         
+            ET.SubElement(surfaceNode, k).text = str(v)
 
-# WRITE OUTPUT TO FILE
-final_xml.write_output("test.xml")
+# OUTPUT XML CONTENT TO FILE
+tree_out = ET.tostring(root, pretty_print=True, xml_declaration=True, encoding="UTF-8")
+
+with open('Output.xml','wb') as f:
+    f.write(tree_out)
