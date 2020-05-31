@@ -3,7 +3,7 @@ from collections import OrderedDict
 import lxml.etree as ET
 
 # BUILD NESTED ID DICTIONARY FROM CSV
-with open("Input.csv") as f:
+with open("Input.csv", 'r') as f:
     reader = csv.DictReader(f)      
 
     id_dct = OrderedDict({})
